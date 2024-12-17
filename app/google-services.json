@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "294445114011",
+    "project_id": "intercambio-6d544",
+    "storage_bucket": "intercambio-6d544.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:294445114011:android:ecb7e49ae9923b822b5c3e",
+        "android_client_info": {
+          "package_name": "com.example.myapplicationexchange"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTB-kd0NCQuHgO_9sEGlrngqWHKLs0l88"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
