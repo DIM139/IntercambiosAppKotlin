@@ -14,7 +14,9 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun LoginPage(navController: NavController) {
+//fun LoginPage(navController: NavController) {
+fun LoginPage(navController: NavController, onLoginSuccess: (String) -> Unit) {
+
     val auth = FirebaseAuth.getInstance()
 
     // Estados para email, password y error
@@ -62,11 +64,22 @@ fun LoginPage(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Botón de Iniciar Sesión
+//        Button(onClick = {
+//            auth.signInWithEmailAndPassword(email, password)
+//                .addOnCompleteListener { task ->
+//                    if (task.isSuccessful) {
+//                        navController.navigate("home") // Ir a HomePage
+//                    } else {
+//                        errorMessage = "Error: ${task.exception?.message}"
+//                    }
+//                }
+//        }) {
         Button(onClick = {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        navController.navigate("home") // Ir a HomePage
+                        val userName = auth.currentUser?.displayName ?: "Usuario"
+                        navController.navigate("home?userName=$userName") // Pasamos el nombre de usuario al HomePage
                     } else {
                         errorMessage = "Error: ${task.exception?.message}"
                     }
@@ -78,7 +91,13 @@ fun LoginPage(navController: NavController) {
         Spacer(modifier = Modifier.height(8.dp))
 
         // Botón para ir al Registro
-        TextButton(onClick = { navController.navigate("signup") }) {
+//        TextButton(onClick = { navController.navigate("sign") }) {
+//            Text("¿No tienes cuenta? Regístrate")
+//        }
+        TextButton(onClick = {
+            println("Navegando a SignPage")
+            navController.navigate("sing")
+        }) {
             Text("¿No tienes cuenta? Regístrate")
         }
     }
