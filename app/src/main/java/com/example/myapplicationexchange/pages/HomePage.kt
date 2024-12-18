@@ -72,6 +72,18 @@ fun HomePage(navController: NavController, userName: String) {
         ) {
             Text(text = "Visualizar Intercambios")
         }
+
+        // Botón para unirse a un intercambio
+        Button(
+            onClick = {
+                navController.navigate("joinExchange") // Navega a la pantalla para unirse a un intercambio
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Text(text = "Unirme a un Intercambio")
+        }
     }
 }
 

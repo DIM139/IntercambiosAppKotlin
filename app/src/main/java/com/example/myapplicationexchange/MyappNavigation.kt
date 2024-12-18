@@ -10,6 +10,7 @@ import com.example.myapplicationexchange.pages.CreateExchangePage
 import com.example.myapplicationexchange.pages.ExchangeDetailsPage
 import com.example.myapplicationexchange.pages.ExchangeListPage
 import com.example.myapplicationexchange.pages.HomePage
+import com.example.myapplicationexchange.pages.JoinExchangePage
 import com.example.myapplicationexchange.pages.LoginPage
 import com.example.myapplicationexchange.pages.SingPage
 
@@ -50,6 +51,11 @@ fun MyAppNavigation(navController: NavHostController) {
 
         composable("viewExchanges"){
             ExchangeListPage(navController = navController)
+        }
+
+        // Pantalla para unirse a un intercambio
+        composable("joinExchange") {
+            JoinExchangePage(navController = navController)
         }
 
         composable("exchangeDetails/{exchangeId}") { backStackEntry ->
