@@ -2,8 +2,14 @@ package com.example.myapplicationexchange.pages
 
 
 
+import android.Manifest
+import android.app.Activity
 import android.widget.DatePicker
 import android.app.DatePickerDialog
+import android.content.Intent
+import android.provider.ContactsContract
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -43,7 +49,86 @@ fun CreateExchangePage(navController: NavController) {
     val context = LocalContext.current
     // Scroll state
     val scrollState = rememberScrollState()
+    ////////////////////////////////////////
+    // Lanzador para seleccionar un contacto
+    val contactPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                if (data != null) {
+                    val contactUri = data.data ?: return@rememberLauncherForActivityResult
+                    val cursor = context.contentResolver.query(
+                        contactUri,
+                        null,
+                        null,
+                        null,
+                        null
+                    )
+                    cursor?.use {
+                        if (it.moveToFirst()) {
+                            // Obtener el nombre
+                            val nameIndex = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                            val name = it.getString(nameIndex)
 
+                            // Obtener el número de teléfono
+                            val idIndex = it.getColumnIndex(ContactsContract.Contacts._ID)
+                            val contactId = it.getString(idIndex)
+                            val phoneCursor = context.contentResolver.query(
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                null,
+                                "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+                                arrayOf(contactId),
+                                null
+                            )
+                            var phoneNumber = ""
+                            phoneCursor?.use { pc ->
+                                if (pc.moveToFirst()) {
+                                    val phoneIndex = pc.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                                    phoneNumber = pc.getString(phoneIndex)
+                                }
+                            }
+
+                            // Obtener el correo electrónico
+                            val emailCursor = context.contentResolver.query(
+                                ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                                null,
+                                "${ContactsContract.CommonDataKinds.Email.CONTACT_ID} = ?",
+                                arrayOf(contactId),
+                                null
+                            )
+                            var email = ""
+                            emailCursor?.use { ec ->
+                                if (ec.moveToFirst()) {
+                                    val emailIndex = ec.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)
+                                    email = ec.getString(emailIndex)
+                                }
+                            }
+
+                            // Actualizar los estados
+                            participantName = name ?: ""
+                            participantPhone = phoneNumber
+                            participantEmail = email
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    // Lanzador para solicitar permisos
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                val intent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+                contactPickerLauncher.launch(intent)
+            }
+        }
+    )
+
+
+    ///////////////////////////////////////
     // Layout principal
     Column(
 //        modifier = Modifier
@@ -125,6 +210,17 @@ fun CreateExchangePage(navController: NavController) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+        //////////////////////////////////////////////////
+
+        Button(onClick = {
+            permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+        }) {
+            Text("Seleccionar desde Contactos")
+        }
+
+
+        ///////////////////////////////////////////////
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(onClick = {
@@ -246,6 +342,12 @@ fun CreateExchangePage(navController: NavController) {
                 .addOnFailureListener { e ->
                     println("Error al guardar: $e")
                 }
+            participantsList.forEachIndexed { index, participant ->
+                val aux=participant["correo"]?:"dfrancohdez@gmail.com"
+                sendEmail("Invitación a intercambio",
+                    "Te han invitado intercambio "+exchangeName+" con el id: "+exchangeId,aux)
+            }
+
         }) {
             Text("Guardar Intercambio")
         }
