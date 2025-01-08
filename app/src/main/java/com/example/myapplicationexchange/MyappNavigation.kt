@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.myapplicationexchange.pages.CreateExchangePage
+import com.example.myapplicationexchange.pages.EditExchangePage
 import com.example.myapplicationexchange.pages.ExchangeDetailsPage
 import com.example.myapplicationexchange.pages.ExchangeListPage
 import com.example.myapplicationexchange.pages.HomePage
@@ -18,6 +19,8 @@ import com.example.myapplicationexchange.pages.SingPage
 fun MyAppNavigation(navController: NavHostController) {
     // Variable para almacenar el nombre de usuario
     val userName = remember { mutableStateOf("") }
+//    val exchangeId = remember { mutableStateOf("") }
+
 
     NavHost(navController = navController, startDestination = "login") {
         // Pantalla de inicio de sesión
@@ -50,7 +53,7 @@ fun MyAppNavigation(navController: NavHostController) {
         }
 
         composable("viewExchanges"){
-            ExchangeListPage(navController = navController)
+            ExchangeListPage(navController = navController, userName = userName.value)
         }
 
         // Pantalla para unirse a un intercambio
@@ -62,6 +65,13 @@ fun MyAppNavigation(navController: NavHostController) {
             val exchangeId = backStackEntry.arguments?.getString("exchangeId") ?: ""
             ExchangeDetailsPage(exchangeId, navController)
         }
+
+//        Pantalla de edicion
+          composable("editExchange/{exchangeId}") { backStackEntry ->
+            val exchangeId = backStackEntry.arguments?.getString("exchangeId") ?: ""
+            EditExchangePage(exchangeId = exchangeId, navController = navController)
+        }
+
     }
 }
 

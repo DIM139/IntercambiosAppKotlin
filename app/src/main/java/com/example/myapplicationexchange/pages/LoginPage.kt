@@ -14,54 +14,54 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-//fun LoginPage(navController: NavController) {
 fun LoginPage(navController: NavController, onLoginSuccess: (String) -> Unit) {
-
+    var userNameInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
-
-    // Estados para email, password y error
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Iniciar Sesión", fontSize = 28.sp)
+        Text(text = "Iniciar Sesión", fontSize = 24.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de Email
+
+// Campo de Email
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = userNameInput,
+            onValueChange = { userNameInput = it },
             label = { Text("Correo Electrónico") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
         )
-
         Spacer(modifier = Modifier.height(8.dp))
+
 
         // Campo de Contraseña
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = passwordInput,
+            onValueChange = { passwordInput = it },
             label = { Text("Contraseña") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Mensaje de error
-        errorMessage?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
-        }
-
         Spacer(modifier = Modifier.height(16.dp))
+
+//        Button(onClick = {
+//            // Simulación de autenticación exitosa
+//            if (userNameInput.isNotBlank() && passwordInput.isNotBlank()) {
+//                onLoginSuccess(userNameInput) // Enviar el nombre ingresado
+//            }
+//        }) {
+//            Text(text = "Ingresar")
+//        }
 
         // Botón de Iniciar Sesión
 //        Button(onClick = {
@@ -74,12 +74,20 @@ fun LoginPage(navController: NavController, onLoginSuccess: (String) -> Unit) {
 //                    }
 //                }
 //        }) {
+
+        // Mensaje de error
+        errorMessage?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            auth.signInWithEmailAndPassword(email, password)
+            auth.signInWithEmailAndPassword(userNameInput, passwordInput)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val userName = auth.currentUser?.displayName ?: "Usuario"
-                        navController.navigate("home?userName=$userName") // Pasamos el nombre de usuario al HomePage
+                        navController.navigate("home?userName=$userName")
+                        onLoginSuccess(userNameInput)// Pasamos el nombre de usuario al HomePage
                     } else {
                         errorMessage = "Error: ${task.exception?.message}"
                     }
@@ -88,12 +96,8 @@ fun LoginPage(navController: NavController, onLoginSuccess: (String) -> Unit) {
             Text("Iniciar Sesión")
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
         // Botón para ir al Registro
-//        TextButton(onClick = { navController.navigate("sign") }) {
-//            Text("¿No tienes cuenta? Regístrate")
-//        }
+
         TextButton(onClick = {
             println("Navegando a SignPage")
             navController.navigate("sing")

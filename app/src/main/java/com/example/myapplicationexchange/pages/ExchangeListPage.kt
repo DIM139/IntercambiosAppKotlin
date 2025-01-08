@@ -35,13 +35,16 @@ data class Participant(
     val telefono: String
 )
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExchangeListPage(navController: NavController) {
+fun ExchangeListPage(navController: NavController, userName: String) {
     val db = Firebase.firestore
     val exchangesCollection = db.collection("intercambios")
     val exchangesState = remember { mutableStateOf<List<Exchange>>(emptyList()) }
+    val filteredExchangesState = remember { mutableStateOf<List<Exchange>>(emptyList()) }
     val context = LocalContext.current
+    val filterEmail = userName // Cambia esto por el correo que deseas filtrar
 
     // Recuperar datos desde Firestore
     LaunchedEffect(Unit) {
@@ -70,6 +73,12 @@ fun ExchangeListPage(navController: NavController) {
                     }
                 }
                 exchangesState.value = exchanges
+
+                // Filtrar intercambios por correo
+                val filteredExchanges = exchanges.filter { exchange ->
+                    exchange.participantes.any { participant -> participant.correo == filterEmail }
+                }
+                filteredExchangesState.value = filteredExchanges
             }
             .addOnFailureListener { exception ->
                 Toast.makeText(context, "Error al cargar los intercambios: ${exception.message}", Toast.LENGTH_SHORT).show()
@@ -80,37 +89,97 @@ fun ExchangeListPage(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Lista de Intercambios") },
+                title = { Text("Gestion de Intercambios") },
                 colors = TopAppBarDefaults.mediumTopAppBarColors()
             )
         }
     ) { innerPadding ->
-        Box(
+        // Contenido desplazable con LazyColumn
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val exchanges = exchangesState.value
-            if (exchanges.isEmpty()) {
-                // Mostrar mensaje si no hay intercambios
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No hay intercambios disponibles")
-                }
-            } else {
-                // Mostrar la lista de intercambios
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    items(exchanges) { exchange ->
-                        ExchangeItem(exchange, navController) // Pasamos el navController a ExchangeItem
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
+            // Título y lista completa de intercambios
+            item {
+                Text(
+                    text = "Intercambios Creados",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            items(exchangesState.value) { exchange ->
+                ExchangeItem(exchange, navController)
+            }
+
+            // Título y lista filtrada de intercambios
+            item {
+                Text(
+                    text = "Tus Intercambios $userName",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                )
+            }
+            items(filteredExchangesState.value) { exchange ->
+                ExchangeItem(exchange, navController)
+            }
+        }
+    }
+}
+
+//@Composable
+//fun ExchangeItem(exchange: Exchange, navController: NavController) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clickable {
+//                // Navegar a la pantalla de detalles del intercambio
+//                navController.navigate("exchangeDetails/${exchange.id}")
+//            },
+//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+//        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+//    ) {
+//        Column(
+//            modifier = Modifier.padding(16.dp)
+//        ) {
+//            Text(
+//                text = exchange.nombre,
+//                style = MaterialTheme.typography.titleMedium
+//            )
+//            Spacer(modifier = Modifier.height(4.dp))
+//            Text(
+//                text = "Fecha de Intercambio: ${exchange.fechaIntercambio}",
+//                style = MaterialTheme.typography.bodyMedium
+//            )
+//            Text(
+//                text = "Lugar: ${exchange.lugar}",
+//                style = MaterialTheme.typography.bodyMedium
+//            )
+//        }
+//    }
+//}
+
+
+@Composable
+fun ExchangeList(exchanges: List<Exchange>, navController: NavController) {
+    if (exchanges.isEmpty()) {
+        // Mostrar mensaje si no hay intercambios
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No hay intercambios disponibles")
+        }
+    } else {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(exchanges) { exchange ->
+                ExchangeItem(exchange, navController)
             }
         }
     }
@@ -147,3 +216,27 @@ fun ExchangeItem(exchange: Exchange, navController: NavController) {
         }
     }
 }
+
+
+//@Composable
+//fun ExchangeList(exchanges: List<Exchange>, navController: NavController) {
+//    if (exchanges.isEmpty()) {
+//        // Mostrar mensaje si no hay intercambios
+//        Box(
+//            modifier = Modifier.fillMaxSize(),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Text("No hay intercambios disponibles")
+//        }
+//    } else {
+//        LazyColumn(
+//            modifier = Modifier
+//                .fillMaxSize()
+//        ) {
+//            items(exchanges) { exchange ->
+//                ExchangeItem(exchange, navController)
+//                Spacer(modifier = Modifier.height(8.dp))
+//            }
+//        }
+//    }
+//}
